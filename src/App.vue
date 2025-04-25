@@ -11,7 +11,8 @@
             </van-popup>
         </van-cell-group>
         <vant-cell-group inset class="btn_group">
-            <van-button round type="danger" block @click="start">开始计时</van-button>
+            <van-button round type="danger" block @click="start" v-if="!is_counting">开始计时</van-button>
+            <van-button round type="danger" block @click="stop" v-else>停止计时</van-button>
         </vant-cell-group>
         <div class="circle" v-if="rate > 0">
             <van-circle v-model:current-rate="currentRate" :rate="rate" :speed="300" :text="text"
@@ -36,6 +37,8 @@ const gradientColor = {
     '100%': '#6149f6',
 }
 
+const is_counting = ref(false)
+
 // 圆环进度条
 let timer = null
 let count = 0
@@ -52,12 +55,6 @@ const onConfirm = ({ selectedValues }) => {
 }
 let audio = null
 const shownotification = () => {
-    // const notification = new Notification('喝喝茶~', {
-    //     body: '主人，茶已经煮好了！',
-    //     timeoutType: 'never',
-    //     silent: true,
-    //     requireInteraction: true
-    // })
     let notification = null
 
     window.electronAPI.trayFlash('title', 'content')
@@ -73,6 +70,7 @@ const shownotification = () => {
     })
 }
 const start = () => {
+    is_counting.value = !is_counting.value
     count = 0
     currentRate.value = 0
     console.log(task.value, time.value)
@@ -89,6 +87,7 @@ const start = () => {
         count++
         rate.value = (count / data) * 100
         if (count >= data) {
+            is_counting.value = !is_counting.value
             shownotification()
             clearInterval(timer)
             timer = null
@@ -97,6 +96,16 @@ const start = () => {
         }
     }
     update()
+}
+
+const stop=()=>{
+    is_counting.value = !is_counting.value
+    if(timer){
+        clearInterval(timer)
+        timer = null
+        rate.value = 0
+    }
+    
 }
 </script>
 
